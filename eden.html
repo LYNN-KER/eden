@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f2f0e9">
+<title>伊甸园</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f2f0e9;
+    --panel: #f8f7f1;
+    --ink: #293630;
+    --dim: #758178;
+    --line: rgba(48, 65, 53, .16);
+    --accent: #648875;
+    --warm: #b8905e;
+    --bloom: #66866c;
+    --ambient: rgba(119, 151, 126, .15);
+    --intro: #737e76;
+    --panel-start: rgba(250, 249, 243, .97);
+    --panel-end: rgba(235, 238, 229, .95);
+    --field: rgba(255, 255, 255, .62);
+    --field-focus: rgba(255, 255, 255, .9);
+    --card-start: rgba(251, 250, 245, .96);
+    --card-end: rgba(235, 238, 230, .85);
+    --card-hover-start: #fbfaf4;
+    --card-hover-end: #eef0e8;
+    --quiet: #8a948b;
+    --soft-line: rgba(48, 65, 53, .09);
+    --status-bg: #f2f0e9;
+    --search-bg: rgba(48, 65, 53, .045);
+    --art-line: rgba(100, 136, 117, .28);
+    --art-stroke: rgba(100, 136, 117, .68);
+    --art-fill: rgba(100, 136, 117, .08);
+    --danger: #a46660;
+    --shadow: rgba(38, 52, 43, .08);
+    --mono: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    --serif: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", "STSong", serif;
+  }
+  body[data-theme="night"] {
+    color-scheme: dark;
+    --bg: #0b0d10;
+    --panel: #11161b;
+    --ink: #e0e4e7;
+    --dim: #87929a;
+    --line: rgba(216, 221, 227, .13);
+    --accent: #8fb3c9;
+    --warm: #c6ad84;
+    --bloom: #9eb69c;
+    --ambient: rgba(70, 98, 112, .13);
+    --intro: #929ba3;
+    --panel-start: rgba(21, 27, 33, .97);
+    --panel-end: rgba(15, 19, 23, .97);
+    --field: rgba(8, 11, 14, .58);
+    --field-focus: rgba(8, 11, 14, .82);
+    --card-start: rgba(20, 25, 30, .88);
+    --card-end: rgba(15, 19, 23, .68);
+    --card-hover-start: rgba(23, 30, 35, .96);
+    --card-hover-end: rgba(16, 21, 25, .78);
+    --quiet: #68747c;
+    --soft-line: rgba(216, 221, 227, .07);
+    --status-bg: #101419;
+    --search-bg: rgba(255, 255, 255, .025);
+    --art-line: rgba(143, 179, 201, .28);
+    --art-stroke: rgba(143, 179, 201, .68);
+    --art-fill: rgba(143, 179, 201, .08);
+    --danger: #c58f8f;
+    --shadow: rgba(0, 0, 0, .12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink);
+    background-color: var(--bg);
+    background-image: radial-gradient(ellipse at 76% 8%, var(--ambient), transparent 34%);
+    font-family: var(--serif); -webkit-font-smoothing: antialiased;
+    transition: background-color .35s, color .35s;
+  }
+  button, input, textarea, select { font: inherit; }
+  .shell { width: min(1120px, calc(100% - 64px)); margin: 0 auto; padding: 30px 0 56px; }
+  .topline { display: flex; justify-content: space-between; align-items: center; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+  .brand, .local-note { display: flex; align-items: center; gap: 10px; color: var(--dim); font: 10px var(--mono); letter-spacing: .15em; }
+  .brand-mark { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); color: var(--accent); font: 13px var(--serif); }
+  .local-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .top-actions { display: flex; align-items: center; gap: 20px; }
+  .theme-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 10px; border: 1px solid var(--line); background: transparent; color: var(--dim); cursor: pointer; font: 9px var(--mono); letter-spacing: .12em; transition: color .2s, border-color .2s, background .2s; }
+  .theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+  .theme-toggle svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+  .theme-toggle .icon-sun { display: none; }
+  body[data-theme="night"] .theme-toggle .icon-moon { display: none; }
+  body[data-theme="night"] .theme-toggle .icon-sun { display: block; }
+  .hero { position: relative; display: flex; justify-content: space-between; align-items: center; min-height: 260px; padding: 52px 5.5% 44px; border-bottom: 1px solid var(--line); overflow: hidden; }
+  .hero-copy { position: relative; z-index: 1; }
+  .eyebrow, .meta, .filters, .field-label, .count, .action, .status, .card-index, .section-kicker {
+    font-family: var(--mono); letter-spacing: .08em;
+  }
+  .eyebrow { color: var(--accent); font-size: 10px; letter-spacing: .22em; }
+  h1 { margin: 16px 0 12px; font-size: clamp(52px, 7vw, 78px); font-weight: 400; letter-spacing: .1em; line-height: 1.12; }
+  h1 span { color: var(--accent); }
+  .intro { color: var(--intro); font-size: 15px; line-height: 1.9; margin: 0; letter-spacing: .04em; }
+  .hero-art { position: absolute; width: 240px; height: 210px; right: 8%; top: 50%; transform: translateY(-50%); opacity: .82; }
+  .hero-art svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .art-orbit { fill: none; stroke: var(--art-line); stroke-width: .8; }
+  .art-orbit.dashed { stroke-dasharray: 1 6; }
+  .art-branch { fill: none; stroke: var(--art-stroke); stroke-width: 1.15; stroke-linecap: round; }
+  .art-leaf { fill: var(--art-fill); stroke: var(--art-stroke); stroke-width: .9; }
+  .art-seed { fill: var(--warm); }
+  .chapter-nav { display: flex; gap: 8px; margin: 0; border-bottom: 1px solid var(--line); }
+  .chapter-tab { position: relative; display: flex; align-items: baseline; gap: 10px; padding: 15px 14px 13px; border: 0; background: transparent; color: var(--dim); cursor: pointer; font: 15px var(--serif); letter-spacing: .08em; }
+  .chapter-tab::after { position: absolute; content: ""; left: 12px; right: 12px; bottom: -1px; height: 2px; background: transparent; }
+  .chapter-tab span { color: var(--quiet); font: 8px var(--mono); letter-spacing: .1em; }
+  .chapter-tab:hover, .chapter-tab.active { color: var(--accent); }
+  .chapter-tab.active::after { background: var(--accent); }
+  [hidden] { display: none !important; }
+  .workspace { display: grid; grid-template-columns: minmax(250px, 330px) minmax(0, 1fr); gap: clamp(32px, 6vw, 76px); align-items: start; padding-top: 38px; }
+  .entry {
+    position: sticky; top: 24px; margin: 0; padding: 23px 21px 21px; border: 1px solid var(--line);
+    border-top: 2px solid color-mix(in srgb, var(--accent) 70%, transparent); background: linear-gradient(145deg, var(--panel-start), var(--panel-end));
+    box-shadow: 0 20px 60px var(--shadow);
+  }
+  .entry-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .entry-title { margin: 0; font-size: 19px; font-weight: 400; letter-spacing: .08em; }
+  .entry-number { color: var(--accent); font: 10px var(--mono); letter-spacing: .12em; }
+  .field-label { display: block; margin-bottom: 9px; color: var(--dim); font-size: 9px; letter-spacing: .12em; }
+  .field-label-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .field-label-line .field-label { margin: 0; }
+  .prompt-button, .wander-button, .export-button {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 0; border: 0; background: transparent;
+    color: var(--accent); cursor: pointer; font: 9px var(--mono); letter-spacing: .04em;
+    transition: color .18s, opacity .18s;
+  }
+  .prompt-button:hover, .wander-button:hover, .export-button:hover { color: var(--warm); }
+  .prompt-button:focus-visible, .wander-button:focus-visible, .export-button:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+  .prompt-button span { font-size: 13px; }
+  textarea, input[type="text"] {
+    width: 100%; color: var(--ink); background: var(--field); border: 1px solid var(--line);
+    border-radius: 0; padding: 13px 14px; outline: none; transition: border-color .2s, background .2s;
+  }
+  textarea { min-height: 126px; resize: vertical; line-height: 1.8; font-family: var(--serif); font-size: 15px; }
+  input[type="text"] { font-family: var(--mono); font-size: 11px; }
+  textarea:focus, input:focus { border-color: color-mix(in srgb, var(--accent) 70%, transparent); background: var(--field-focus); }
+  textarea::placeholder, input::placeholder { color: #606b73; }
+  .entry-bottom { display: grid; gap: 18px; margin-top: 20px; }
+  .tag-field { flex: 1; }
+  .add-button, .action, .filter {
+    border: 1px solid var(--line); background: transparent; color: var(--dim); cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .add-button { display: flex; justify-content: space-between; align-items: center; min-height: 46px; width: 100%; padding: 0 14px; color: var(--accent); border-color: color-mix(in srgb, var(--accent) 54%, transparent); font: 10px var(--mono); letter-spacing: .13em; }
+  .add-button span:last-child { font-size: 16px; font-family: var(--serif); font-weight: 300; }
+  .add-button:hover, .add-button:focus-visible { background: color-mix(in srgb, var(--accent) 9%, transparent); border-color: var(--accent); }
+  .list-heading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin: 0 0 18px; }
+  .list-tools { display: flex; align-items: center; gap: 16px; }
+  .section-kicker { margin-bottom: 7px; color: var(--accent); font-size: 9px; letter-spacing: .18em; }
+  .list-title { margin: 0; font-size: 23px; font-weight: 400; letter-spacing: .08em; }
+  .record-total { color: var(--dim); font: 10px var(--mono); letter-spacing: .04em; white-space: nowrap; }
+  .wander-button { padding: 7px 9px; border: 1px solid var(--line); white-space: nowrap; }
+  .wander-button:disabled { opacity: .4; cursor: not-allowed; }
+  .symposium { width: min(850px, 100%); margin: 38px auto 0; }
+  .symposium-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 17px; }
+  .symposium-title { margin: 0; font-size: 32px; font-weight: 400; letter-spacing: .1em; }
+  .symposium-subtitle { margin: 8px 0 0; color: var(--dim); font-size: 13px; line-height: 1.8; }
+  .symposium-filters { display: flex; gap: 5px; flex-shrink: 0; }
+  .symposium-filter { padding: 8px 10px; border: 1px solid transparent; background: transparent; color: var(--dim); cursor: pointer; font: 9px var(--mono); letter-spacing: .06em; }
+  .symposium-filter:hover, .symposium-filter.active { border-color: var(--line); color: var(--accent); }
+  .symposium-filter span { margin-left: 5px; opacity: .65; }
+  .source-note { margin: 0 0 15px; padding: 10px 13px; border-left: 2px solid color-mix(in srgb, var(--warm) 65%, transparent); background: color-mix(in srgb, var(--warm) 6%, transparent); color: var(--dim); font-size: 11px; line-height: 1.8; }
+  .category-bar { display: flex; align-items: center; gap: 13px; margin-bottom: 17px; padding-bottom: 13px; border-bottom: 1px solid var(--soft-line); }
+  .category-heading { flex-shrink: 0; color: var(--dim); font: 8px var(--mono); letter-spacing: .13em; }
+  .category-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+  .category-filter { padding: 6px 9px; border: 1px solid transparent; background: transparent; color: var(--dim); cursor: pointer; font: 9px var(--mono); }
+  .category-filter span { margin-left: 4px; opacity: .58; }
+  .category-filter:hover, .category-filter.active { border-color: color-mix(in srgb, var(--accent) 36%, transparent); color: var(--accent); }
+  .category-create-form { display: flex; gap: 5px; margin-left: auto; }
+  .category-create-form input { width: 106px; padding: 7px 8px; font-size: 9px; }
+  .category-create-form button { padding: 0 8px; border: 1px solid var(--line); background: transparent; color: var(--dim); cursor: pointer; font: 9px var(--mono); white-space: nowrap; }
+  .category-create-form button:hover { border-color: var(--accent); color: var(--accent); }
+  .symposium-tools { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin: 0 0 16px; }
+  .symposium-add { flex: 1; }
+  .symposium-add summary { width: fit-content; color: var(--accent); cursor: pointer; font: 10px var(--mono); letter-spacing: .05em; list-style: none; }
+  .symposium-add summary::-webkit-details-marker { display: none; }
+  .symposium-add summary::before { content: "＋ "; }
+  .custom-question-form { display: grid; gap: 10px; margin-top: 12px; padding: 15px; border: 1px solid var(--line); background: linear-gradient(145deg, var(--panel-start), var(--panel-end)); }
+  .custom-question-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 8px; }
+  .custom-question-grid input, .custom-question-grid select { min-width: 0; width: 100%; padding: 10px; border: 1px solid var(--line); background: var(--status-bg); color: var(--ink); font: 10px var(--mono); }
+  .custom-question-form textarea { min-height: 76px; font-size: 14px; }
+  .custom-question-context { min-height: 54px !important; font-size: 12px !important; }
+  .custom-question-submit { justify-self: end; min-height: 36px; padding: 0 14px; border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); background: transparent; color: var(--accent); cursor: pointer; font: 9px var(--mono); }
+  .custom-question-submit:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .symposium-search { width: min(220px, 35%); }
+  .symposium-list { display: grid; gap: 13px; }
+  .symposium-card { padding: 20px 22px; border: 1px solid var(--line); background: linear-gradient(115deg, var(--card-start), var(--card-end)); }
+  .symposium-card-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 13px; }
+  .source-group { display: flex; align-items: center; gap: 8px; }
+  .category-badge { padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); color: var(--accent); font: 8px var(--mono); letter-spacing: .05em; white-space: nowrap; }
+  .philosopher { color: var(--accent); font: 9px var(--mono); letter-spacing: .1em; }
+  .source { color: var(--dim); font: 9px var(--mono); text-align: right; }
+  .symposium-question { margin: 0; font-size: 20px; font-weight: 400; line-height: 1.75; letter-spacing: .04em; }
+  .symposium-context { margin: 8px 0 17px; color: var(--dim); font-size: 12px; line-height: 1.8; }
+  .symposium-answers { margin: 12px 0 17px; }
+  .symposium-answers .personal-note:first-child { margin-top: 0; }
+  .answer-label { display: block; margin-bottom: 7px; color: var(--dim); font: 8px var(--mono); letter-spacing: .15em; }
+  .answer-input { min-height: 92px; font-size: 14px; }
+  .symposium-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; }
+  .answer-state { color: var(--dim); font: 9px var(--mono); }
+  .answer-state.saved { color: var(--accent); }
+  .symposium-buttons { display: flex; gap: 8px; }
+  .symposium-action { min-height: 34px; padding: 0 11px; border: 1px solid var(--line); background: transparent; color: var(--dim); cursor: pointer; font: 9px var(--mono); letter-spacing: .04em; }
+  .symposium-action.primary { border-color: color-mix(in srgb, var(--accent) 55%, transparent); color: var(--accent); }
+  .symposium-action:hover, .symposium-action:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .symposium-delete { margin-left: auto; border: 0; background: transparent; color: var(--danger); cursor: pointer; font: 9px var(--mono); }
+  .symposium-empty { padding: 42px 20px; border: 1px dashed var(--line); color: var(--dim); text-align: center; font-size: 13px; line-height: 1.8; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+  .filters { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter { position: relative; padding: 8px 9px 9px; border: 0; font-size: 9px; white-space: nowrap; }
+  .filter::after { position: absolute; content: ""; left: 9px; right: 9px; bottom: 0; height: 1px; background: transparent; }
+  .filter:hover, .filter.active { color: var(--accent); }
+  .filter.active::after { background: var(--accent); }
+  .filter .count { color: inherit; opacity: .6; margin-left: 4px; font-size: 9px; }
+  .search-wrap { position: relative; width: min(205px, 37%); flex-shrink: 0; }
+  .search-icon { position: absolute; z-index: 1; left: 11px; top: 50%; width: 13px; height: 13px; transform: translateY(-50%); fill: none; stroke: var(--dim); stroke-width: 1.3; pointer-events: none; }
+  .search { width: 100%; padding: 10px 10px 10px 32px !important; border: 1px solid transparent !important; background: var(--search-bg) !important; font-size: 10px !important; }
+  .search:focus { border-color: var(--line) !important; }
+  .garden { display: grid; gap: 11px; padding-top: 15px; }
+  .card { position: relative; padding: 20px 22px 18px; border: 1px solid var(--line); background: linear-gradient(110deg, var(--card-start), var(--card-end)); transition: border-color .2s, transform .2s, background .2s; }
+  .card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: linear-gradient(110deg, var(--card-hover-start), var(--card-hover-end)); }
+  .card.is-highlighted { border-color: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 12px 36px var(--shadow); animation: revisit-glow 2.6s ease-out both; }
+  @keyframes revisit-glow { 0%, 24% { background: color-mix(in srgb, var(--accent) 13%, var(--panel)); } 100% { background: linear-gradient(110deg, var(--card-start), var(--card-end)); } }
+  .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .card-index { color: var(--quiet); font-size: 8px; letter-spacing: .15em; }
+  .card-mark { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 9px color-mix(in srgb, var(--accent) 38%, transparent); }
+  .card[data-status="growing"] .card-mark { background: var(--warm); box-shadow: 0 0 9px color-mix(in srgb, var(--warm) 38%, transparent); }
+  .card[data-status="bloomed"] .card-mark { background: var(--bloom); box-shadow: 0 0 9px color-mix(in srgb, var(--bloom) 45%, transparent); }
+  .question { margin: 0; font-size: 17px; line-height: 1.8; letter-spacing: .025em; overflow-wrap: anywhere; }
+  .card-bottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 19px; padding-top: 13px; border-top: 1px solid var(--soft-line); }
+  .card-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .meta { color: var(--dim); font-size: 9px; letter-spacing: .02em; }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag { padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent); color: var(--accent); font: 9px var(--mono); cursor: pointer; transition: border-color .15s, background .15s; }
+  .tag:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); border-color: var(--accent); }
+  .personal-notes { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--soft-line); }
+  .personal-note { margin-top: 7px; padding: 9px 12px; border-left: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); background: var(--search-bg); }
+  .personal-note-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 5px; }
+  .personal-note-name { color: var(--accent); font: 9px var(--mono); letter-spacing: .08em; }
+  .personal-note-date { color: var(--dim); font: 9px var(--mono); }
+  .personal-note-text { margin: 0; color: var(--ink); font-size: 13px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .personal-note-empty { color: var(--dim); font-size: 11px; }
+  .personal-compose { margin-top: 11px; }
+  .personal-compose summary { width: fit-content; color: var(--accent); cursor: pointer; font: 9px var(--mono); letter-spacing: .06em; list-style: none; }
+  .personal-compose summary::-webkit-details-marker { display: none; }
+  .personal-compose summary::before { content: "＋ "; }
+  .personal-compose[open] summary { margin-bottom: 9px; }
+  .personal-compose-body { display: flex; align-items: end; gap: 9px; }
+  .personal-answer-input { min-height: 72px; resize: vertical; font-size: 13px; }
+  .personal-answer-save { min-height: 38px; flex-shrink: 0; padding: 0 11px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); background: transparent; color: var(--accent); cursor: pointer; font: 9px var(--mono); }
+  .personal-answer-save:hover, .personal-answer-save:focus-visible { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .card-actions { display: flex; align-items: center; gap: 7px; }
+  .status { color: var(--ink); background: var(--status-bg); border: 1px solid var(--line); padding: 7px 8px; font-size: 9px; }
+  .action { padding: 7px 8px; border-color: transparent; font-size: 9px; }
+  .action:hover, .action:focus-visible { border-color: color-mix(in srgb, var(--danger) 55%, transparent); color: var(--danger); }
+  .empty { padding: 52px 20px; border: 1px dashed var(--line); color: var(--dim); text-align: center; line-height: 1.9; font-size: 13px; }
+  .empty::before { content: "✳"; display: block; margin-bottom: 13px; color: var(--accent); font-size: 20px; }
+  .empty strong { display: block; color: var(--ink); font-size: 16px; font-weight: 400; margin-bottom: 5px; }
+  .footnote { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--dim); font: 9px/1.8 var(--mono); letter-spacing: .05em; }
+  .footnote-actions { display: flex; align-items: center; gap: 13px; }
+  .toast { position: fixed; z-index: 5; left: 50%; bottom: 26px; max-width: calc(100% - 32px); padding: 11px 16px; border: 1px solid var(--line); background: var(--panel-start); color: var(--ink); font: 11px/1.6 var(--mono); box-shadow: 0 12px 36px var(--shadow); opacity: 0; transform: translate(-50%, 10px); pointer-events: none; transition: opacity .2s, transform .2s; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .compost { width: min(680px, 100%); margin: 30px auto 0; }
+  .compost summary { width: fit-content; color: var(--quiet); cursor: pointer; font: 10px var(--mono); letter-spacing: .06em; list-style: none; }
+  .compost summary::-webkit-details-marker { display: none; }
+  .compost summary::before { content: "＋ "; }
+  .compost[open] summary { margin-bottom: 11px; }
+  .compost-note { margin: 0 0 13px; color: var(--dim); font-size: 11px; line-height: 1.8; }
+  .compost-list { display: grid; gap: 9px; }
+  .compost-item { padding: 14px 16px; border: 1px dashed var(--line); background: var(--search-bg); }
+  .compost-item-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .compost-question { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+  .compost-meta { color: var(--quiet); font: 8px var(--mono); letter-spacing: .08em; white-space: nowrap; }
+  .compost-restore { margin-top: 9px; min-height: 30px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); background: transparent; color: var(--accent); cursor: pointer; font: 9px var(--mono); }
+  .compost-restore:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .personal-note.is-flower { border-left: 1px solid color-mix(in srgb, var(--bloom) 70%, transparent); background: color-mix(in srgb, var(--bloom) 7%, transparent); }
+  .personal-note.is-flower .personal-note-name { color: var(--bloom); }
+  #backup-note { color: var(--quiet); }
+  #backup-note.stale { color: var(--danger); }
+  @media (prefers-reduced-motion: reduce) { .card.is-highlighted { animation: none; } * { scroll-behavior: auto !important; } }
+  @media (max-width: 820px) {
+    .shell { width: min(100% - 44px, 680px); }
+    .hero { min-height: 235px; padding-left: 2%; }
+    .hero-art { right: 0; opacity: .55; }
+    .workspace { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+    .entry { position: static; }
+    textarea { min-height: 100px; }
+    .entry-bottom { grid-template-columns: 1fr 180px; align-items: end; }
+  }
+  @media (max-width: 560px) {
+    .shell { width: calc(100% - 30px); padding-top: 18px; }
+    .topline { padding-bottom: 13px; }
+    .brand, .local-note { font-size: 8px; letter-spacing: .1em; gap: 7px; }
+    .brand-mark { width: 22px; height: 22px; }
+    .hero { min-height: 220px; padding: 42px 0 34px; }
+    .hero-art { right: -75px; width: 205px; opacity: .35; }
+    h1 { font-size: clamp(48px, 14vw, 66px); }
+    .intro { max-width: 270px; font-size: 13px; }
+    .workspace { gap: 34px; padding-top: 25px; }
+    .entry { padding: 19px 16px 16px; }
+    .field-label-line { flex-wrap: wrap; }
+    .entry-bottom { grid-template-columns: 1fr; gap: 16px; }
+    .list-heading { align-items: flex-start; margin-bottom: 13px; }
+    .list-tools { align-items: flex-end; flex-direction: column; gap: 3px; }
+    .wander-button { padding: 5px 7px; font-size: 8px; }
+    .list-title { font-size: 21px; }
+    .toolbar { align-items: stretch; flex-direction: column; gap: 9px; }
+    .filters { justify-content: space-between; }
+    .filter { padding-left: 5px; padding-right: 5px; }
+    .search-wrap { width: 100%; }
+    .card { padding: 17px 15px 15px; }
+    .question { font-size: 16px; }
+    .card-bottom { align-items: flex-start; flex-direction: column; gap: 13px; }
+    .card-actions { width: 100%; }
+    .status { flex: 1; }
+    .footnote { align-items: flex-start; flex-direction: column; font-size: 8px; }
+    .footnote-actions { width: 100%; justify-content: space-between; }
+    .chapter-tab { gap: 6px; padding-left: 9px; padding-right: 9px; font-size: 13px; }
+    .chapter-tab span { font-size: 7px; }
+    .symposium { margin-top: 25px; }
+    .symposium-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
+    .symposium-title { font-size: 27px; }
+    .symposium-filters { width: 100%; }
+    .symposium-filter { flex: 1; padding-left: 5px; padding-right: 5px; }
+    .symposium-card { padding: 17px 15px; }
+    .symposium-question { font-size: 18px; }
+    .symposium-card-top { align-items: flex-start; flex-direction: column; gap: 6px; }
+    .source-group { align-items: flex-start; flex-wrap: wrap; }
+    .source { text-align: left; }
+    .category-bar { align-items: flex-start; flex-direction: column; gap: 7px; }
+    .category-create-form { margin-left: 0; }
+    .category-create-form input { width: 125px; }
+    .symposium-tools { align-items: stretch; flex-direction: column; }
+    .custom-question-grid { grid-template-columns: 1fr; }
+    .custom-question-submit { justify-self: stretch; }
+    .symposium-search { width: 100%; }
+    .symposium-delete { margin-left: 0; }
+    .symposium-actions { align-items: flex-start; flex-direction: column; }
+    .symposium-buttons { width: 100%; }
+    .symposium-action { flex: 1; }
+    .personal-compose-body { align-items: stretch; flex-direction: column; }
+    .personal-answer-save { min-height: 38px; }
+  }
+</style>
+</head>
+<body data-theme="day">
+<main class="shell">
+  <div class="topline">
+    <div class="brand"><span class="brand-mark">E</span><span>EDEN / FIELD NOTES</span></div>
+    <div class="top-actions">
+      <div class="local-note"><span class="local-dot"></span>LOCAL GARDEN</div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换到夜间版本">
+        <svg class="icon-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M12.7 10.1A6 6 0 0 1 5.9 3.3 6.2 6.2 0 1 0 12.7 10.1Z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v2m0 10v2M1 8h2m10 0h2M3 3l1.5 1.5m7 7L13 13m0-10-1.5 1.5m-7 7L3 13"/></svg>
+        <span id="theme-label">夜间</span>
+      </button>
+    </div>
+  </div>
+  <header class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">A GARDEN FOR CURIOSITY</div>
+      <h1>伊甸<span>园</span></h1>
+      <p class="intro">还没想明白的问题，也可以先有个地方待着。<br>慢慢看，慢慢长，不急着给答案。</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 240 210">
+        <circle class="art-orbit dashed" cx="126" cy="104" r="78" />
+        <circle class="art-orbit" cx="126" cy="104" r="60" />
+        <circle class="art-orbit dashed" cx="126" cy="104" r="39" />
+        <path class="art-branch" d="M122 169c4-21 2-40 7-57 5-15 18-25 29-34m-34 48c-11-12-22-17-35-19m38 22c13-3 25-1 39 5m-41 15c-12-5-22-5-34-1" />
+        <path class="art-leaf" d="M128 117c-1-17 10-28 29-39 0 18-8 31-29 39Zm-8-8c-11-12-22-17-35-19 8 15 19 21 35 19Zm-2 34c-12-5-22-5-34-1 11 9 22 10 34 1Zm19-9c13-3 25-1 39 5-13 7-26 5-39-5Z" />
+        <circle class="art-seed" cx="158" cy="77" r="2.5" />
+        <circle class="art-seed" cx="75" cy="91" r="1.8" />
+        <circle class="art-seed" cx="174" cy="141" r="1.8" />
+        <circle class="art-orbit" cx="126" cy="104" r="4" />
+      </svg>
+    </div>
+  </header>
+
+  <nav class="chapter-nav" aria-label="伊甸园栏目">
+    <button class="chapter-tab active" type="button" data-chapter="eden" aria-pressed="true">伊甸园<span>个人问题</span></button>
+    <button class="chapter-tab" type="button" data-chapter="symposium" aria-pressed="false">会饮篇<span id="philosopher-count">哲人之问</span></button>
+  </nav>
+
+  <section class="chapter-view" id="eden-view">
+  <div class="workspace">
+    <form class="entry" id="entry-form">
+      <div class="entry-heading"><h2 class="entry-title">种下一颗问题</h2><span class="entry-number">NO. 01</span></div>
+      <div class="field-label-line">
+        <label class="field-label" for="question-input">WRITE DOWN WHAT YOU WONDER</label>
+        <button class="prompt-button" id="prompt-button" type="button"><span>✳</span> 抽一颗灵感</button>
+      </div>
+      <textarea id="question-input" maxlength="500" placeholder="比如：为什么有些记忆会比事情本身更清晰？" required></textarea>
+      <div class="entry-bottom">
+        <div class="tag-field">
+          <label class="field-label" for="tag-input">加几枚标签 · 可选</label>
+          <input id="tag-input" type="text" maxlength="100" placeholder="学习，灵感，生活">
+        </div>
+        <button class="add-button" type="submit"><span>放进花园</span><span>＋</span></button>
+      </div>
+    </form>
+
+    <section aria-label="问题列表">
+      <div class="list-heading">
+        <div><div class="section-kicker">YOUR QUESTIONS, OVER TIME</div><h2 class="list-title">生长记录</h2></div>
+        <div class="list-tools">
+          <span class="record-total" id="record-total">0 条记录</span>
+          <button class="wander-button" id="wander-button" type="button" disabled>↝ 随机回访</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="filters" id="filters" aria-label="按状态筛选">
+          <button class="filter active" data-filter="all" type="button">全部</button>
+          <button class="filter" data-filter="seed" type="button">待探索</button>
+          <button class="filter" data-filter="growing" type="button">正在想</button>
+          <button class="filter" data-filter="bloomed" type="button">想通了</button>
+        </div>
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.8" cy="6.8" r="4.5"/><path d="m10.2 10.2 3.3 3.3"/></svg>
+          <input class="search" id="search-input" type="text" placeholder="搜索问题或标签…" aria-label="搜索问题和标签">
+        </div>
+      </div>
+      <div class="garden" id="garden" aria-live="polite"></div>
+    </section>
+  </div>
+  <details class="compost" id="compost-box">
+    <summary>堆肥箱 · <span id="compost-count">0</span></summary>
+    <p class="compost-note">删掉的问题会在这里躺三十天，变回土之前随时可以捞回来。</p>
+    <div class="compost-list" id="compost-list"></div>
+  </details>
+  </section>
+
+  <section class="symposium" id="symposium-view" hidden aria-labelledby="symposium-title">
+    <div class="symposium-heading">
+      <div>
+        <div class="section-kicker">QUESTIONS THAT OUTLIVE THEIR ASKERS</div>
+        <h2 class="symposium-title" id="symposium-title">会饮篇</h2>
+        <p class="symposium-subtitle">围坐下来，不急着赢得辩论。先把问题听清楚。</p>
+      </div>
+      <div class="symposium-filters" id="symposium-filters" aria-label="哲人问题筛选">
+        <button class="symposium-filter active" type="button" data-sym-filter="active">席间之问 <span id="active-prompt-count">0</span></button>
+        <button class="symposium-filter" type="button" data-sym-filter="archive">我的存档 <span id="archived-prompt-count">0</span></button>
+      </div>
+    </div>
+    <p class="source-note">从哲学、科技、语言与社会学出发。题目据原著整理，中文为译意或意译；标注发问者与出处，不代表逐字引文。</p>
+      <div class="category-bar">
+        <span class="category-heading">分类</span>
+        <div class="category-filters" id="category-filters" aria-label="按学科分类筛选"></div>
+        <form class="category-create-form" id="category-form">
+          <input id="category-name-input" type="text" maxlength="18" placeholder="新分类名称" aria-label="新分类名称" required>
+          <button type="submit">＋ 添加</button>
+        </form>
+      </div>
+      <div class="symposium-tools">
+        <details class="symposium-add">
+          <summary>添加一道自己的问题</summary>
+          <form class="custom-question-form" id="custom-question-form">
+            <div class="custom-question-grid">
+              <input id="custom-asker" type="text" maxlength="40" placeholder="提问者（可选）">
+              <select id="custom-category" aria-label="问题分类"></select>
+              <input id="custom-source" type="text" maxlength="80" placeholder="出处或来源（可选）">
+            </div>
+            <textarea id="custom-question" maxlength="300" placeholder="写下一个想留在席间的问题……" required></textarea>
+            <textarea class="custom-question-context" id="custom-context" maxlength="300" placeholder="给它补充一点背景（可选）"></textarea>
+            <button class="custom-question-submit" type="submit">放进会饮篇</button>
+          </form>
+        </details>
+        <div class="search-wrap symposium-search">
+          <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.8" cy="6.8" r="4.5"/><path d="m10.2 10.2 3.3 3.3"/></svg>
+          <input class="search" id="symposium-search" type="text" placeholder="搜问题、作者、回答…" aria-label="搜索会饮篇">
+        </div>
+      </div>
+      <div class="symposium-list" id="symposium-list" aria-live="polite"></div>
+  </section>
+
+  <p class="footnote">
+    <span>本地保存 · 数据只留在这台设备的浏览器里</span>
+    <span class="footnote-actions">
+      <button class="export-button" id="export-button" type="button">↓ 导出备份</button>
+      <button class="export-button" id="import-button" type="button">↑ 导入合并</button>
+      <span id="backup-note"></span>
+      <span>GROW AT YOUR OWN PACE</span>
+    </span>
+  </p>
+</main>
+<input id="import-file" type="file" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const KEY = "sage-question-garden-v1";
+  const THEME_KEY = "eden-theme-mode";
+  const SYMPOSIUM_KEY = "eden-symposium-answers-v1";
+  const CUSTOM_QUESTIONS_KEY = "eden-symposium-custom-questions-v1";
+  const CUSTOM_CATEGORIES_KEY = "eden-symposium-custom-categories-v1";
+  const COMPOST_KEY = "eden-compost-v1";
+  const BACKUP_AT_KEY = "eden-last-export-at";
+  const labels = { seed: "待探索", growing: "正在想", bloomed: "想通了" };
+  const categoryLabels = { philosophy: "哲学", technology: "科技", language: "语言", sociology: "社会学" };
+  const philosopherQuestions = [
+    { id: "meno-virtue", category: "philosophy", asker: "美诺向苏格拉底发问", source: "柏拉图《美诺篇》70a", question: "德性可以教给人吗？还是只能通过练习获得？", context: "美诺以德性是否可教开启对话。这里采用常见中译的简洁意译。" },
+    { id: "euthyphro-dilemma", category: "philosophy", asker: "苏格拉底追问游叙弗伦", source: "柏拉图《游叙弗伦篇》10a", question: "虔敬是因为受神喜爱才成为虔敬，还是因为它本来虔敬才受神喜爱？", context: "著名的“游叙弗伦困境”：道德价值来自权威命令，还是有独立于命令的根据？" },
+    { id: "laches-courage", category: "philosophy", asker: "苏格拉底与拉刻斯", source: "柏拉图《拉刻斯篇》190d", question: "勇敢究竟是什么？", context: "对话从勇敢的定义出发，检验战场上的勇气是否足以说明勇敢本身。" },
+    { id: "republic-justice", category: "philosophy", asker: "格劳孔向苏格拉底提出挑战", source: "柏拉图《理想国》卷二", question: "如果没有奖惩与名声，正义本身仍值得选择吗？", context: "格劳孔借“古各斯戒指”的故事追问：人选择正义，是因为它本身好，还是因为它带来回报？" },
+    { id: "symposium-eros", category: "philosophy", asker: "会饮者共同讨论", source: "柏拉图《会饮篇》", question: "爱欲究竟是什么？它会把人的生活引向哪里？", context: "斐德若、阿里斯托芬、苏格拉底等人各自谈论爱欲；这是对全篇讨论的意译概括。" },
+    { id: "aristotle-good", category: "philosophy", asker: "亚里士多德", source: "《尼各马可伦理学》I.2（1094a）", question: "我们的行动最终追求的最高善是什么？", context: "亚里士多德由“每种技艺与选择都指向某种善”出发，追问政治生活与人的最高目的。" },
+    { id: "apology-examined-life", category: "philosophy", asker: "苏格拉底", source: "柏拉图《申辩篇》38a", question: "未经省察的人生，值得过吗？", context: "这道题改写自苏格拉底在审判中的名言：未经省察的人生不值得过。这里将断言转成留给读者的问题。" },
+    { id: "theaetetus-knowledge", category: "philosophy", asker: "苏格拉底追问泰阿泰德", source: "柏拉图《泰阿泰德篇》146c", question: "知识究竟是什么？", context: "苏格拉底请年轻的泰阿泰德给出知识本身的定义；对话尝试了多个答案，却没有轻易封口。" },
+    { id: "lysis-friendship", category: "philosophy", asker: "苏格拉底与吕西斯、梅涅克塞努", source: "柏拉图《吕西斯篇》", question: "友爱究竟是什么？我们为什么会成为朋友？", context: "对话围绕友爱与朋友展开，追问亲近关系究竟由什么构成。" },
+    { id: "hippias-beauty", category: "philosophy", asker: "苏格拉底追问希庇阿斯", source: "柏拉图《大希庇阿斯篇》286d", question: "美本身是什么？", context: "苏格拉底不满足于举出美的事物，而追问使一切美的事物成为美的“美本身”。" },
+    { id: "phaedo-soul", category: "philosophy", asker: "苏格拉底与在场的朋友们", source: "柏拉图《斐多篇》", question: "灵魂会随着身体一同消散吗？", context: "临终前的苏格拉底与朋友们讨论灵魂是否不朽；这是对话核心论题的意译。" },
+    { id: "aristotle-happiness", category: "philosophy", asker: "亚里士多德", source: "《尼各马可伦理学》I.7（1097b）", question: "幸福是一种感受，还是一种依照德性展开的生活？", context: "亚里士多德将幸福视为人的最高善，并追问它究竟是什么样的活动与生活。" },
+    { id: "turing-thinking-machine", category: "technology", asker: "艾伦·图灵", source: "《计算机器与智能》（1950）", question: "机器能思考吗？", context: "图灵在论文开篇提出这个问题，并用“模仿游戏”重新设计了讨论方式。" },
+    { id: "heidegger-technology-tool", category: "technology", asker: "马丁·海德格尔", source: "《技术的追问》（1954）", question: "技术仅仅是达成人类目的的工具吗？", context: "海德格尔从工具性的定义继续追问技术的本质；此处为问题式意译。" },
+    { id: "searle-understanding", category: "technology", asker: "约翰·塞尔", source: "《心灵、大脑与程序》（1980）", question: "遵循规则处理符号，就等于理解语言吗？", context: "“中文屋”思想实验挑战了“程序运行正确就意味着理解”的直觉。" },
+    { id: "wiener-automation", category: "technology", asker: "诺伯特·维纳", source: "《人有人的用处》（1950）", question: "自动化会带来自由，还是让人失去对工作的掌控？", context: "维纳讨论控制论与自动化对人的影响；这里将其社会关切整理为开放问题。" },
+    { id: "cratylus-names", category: "language", asker: "苏格拉底与克拉底鲁、赫莫根尼", source: "柏拉图《克拉底鲁篇》", question: "名字与事物之间的关系，是自然的还是约定俗成的？", context: "对话讨论名称是否天然正确，还是由习俗与约定建立。" },
+    { id: "wittgenstein-meaning", category: "language", asker: "路德维希·维特根斯坦", source: "《哲学研究》§43", question: "一个词的意义究竟是什么？", context: "维特根斯坦以“在语言中的使用”解释许多词的意义；题目是对该段思想的提问式改写。" },
+    { id: "saussure-sign", category: "language", asker: "费尔迪南·德·索绪尔", source: "《普通语言学教程》", question: "语言符号的声音与意义之间，存在天然联系吗？", context: "索绪尔关于能指与所指关系的讨论，引出符号任意性这一语言学基础问题。" },
+    { id: "humboldt-language-world", category: "language", asker: "威廉·冯·洪堡", source: "《论人类语言结构的差异》", question: "语言只是表达思想的工具，还是也塑造思想的方式？", context: "洪堡将语言视为持续生成的活动；这道题概括了语言与世界观的关系。" },
+    { id: "durkheim-social-facts", category: "sociology", asker: "埃米尔·涂尔干", source: "《社会学方法的准则》", question: "社会事实如何在个人之外存在，又反过来约束个人？", context: "涂尔干要求把社会事实作为“物”来考察，追问社会规范如何影响个体。" },
+    { id: "weber-authority", category: "sociology", asker: "马克斯·韦伯", source: "《经济与社会》", question: "人为什么服从权威？", context: "韦伯分析传统型、魅力型与法理型支配；此处将其研究问题简化为一句提问。" },
+    { id: "marx-social-ideas", category: "sociology", asker: "马克思与恩格斯", source: "《德意志意识形态》", question: "生产方式如何塑造一个社会的制度与观念？", context: "这一问题概括了历史唯物主义关于物质生活、社会关系与观念形成的讨论。" },
+    { id: "goffman-interaction", category: "sociology", asker: "欧文·戈夫曼", source: "《日常生活中的自我呈现》", question: "日常互动中，我们如何共同维持角色与秩序？", context: "戈夫曼以戏剧为喻分析日常互动；这里将他的观察浓缩成开放问题。" }
+  ];
+  const form = document.getElementById("entry-form");
+  const questionInput = document.getElementById("question-input");
+  const tagInput = document.getElementById("tag-input");
+  const searchInput = document.getElementById("search-input");
+  const garden = document.getElementById("garden");
+  const filters = document.getElementById("filters");
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeLabel = document.getElementById("theme-label");
+  const promptButton = document.getElementById("prompt-button");
+  const wanderButton = document.getElementById("wander-button");
+  const exportButton = document.getElementById("export-button");
+  const toast = document.getElementById("toast");
+  const chapterNav = document.querySelector(".chapter-nav");
+  const edenView = document.getElementById("eden-view");
+  const symposiumView = document.getElementById("symposium-view");
+  const symposiumList = document.getElementById("symposium-list");
+  const symposiumFilters = document.getElementById("symposium-filters");
+  const categoryFilters = document.getElementById("category-filters");
+  const categoryForm = document.getElementById("category-form");
+  const categoryNameInput = document.getElementById("category-name-input");
+  const customQuestionForm = document.getElementById("custom-question-form");
+  const customCategorySelect = document.getElementById("custom-category");
+  const symposiumSearch = document.getElementById("symposium-search");
+  const importButton = document.getElementById("import-button");
+  const importFile = document.getElementById("import-file");
+  const prompts = [
+    "最近有什么小事，意外地留在了你的脑海里？",
+    "有没有一个问题，你在不同年龄给过不同答案？",
+    "如果今天有一种天气，它会是什么？为什么？",
+    "什么东西因为被命名，才开始变得重要？",
+    "最近一次改变主意，是因为什么？",
+    "有没有一件事，你愿意只因为好奇而去做？",
+    "你对未来的自己，最好奇什么？",
+    "哪种声音最容易把你带回某个地方？",
+    "如果不用效率评价今天，你会怎样描述它？",
+    "你最近注意到什么以前从没留意过的东西？"
+  ];
+  let lastPrompt = "";
+  let toastTimer;
+  let activeFilter = "all";
+  let activeSymposiumFilter = "active";
+  let activeCategory = "all";
+  let questions = load();
+  let symposiumEntries = loadSymposium();
+  let customCategories = loadCustomCategories();
+  let customQuestions = loadCustomQuestions();
+  let compost = loadCompost();
+  purgeCompost();
+
+  function setTheme(theme, persist = true) {
+    const isNight = theme === "night";
+    document.body.dataset.theme = isNight ? "night" : "day";
+    themeLabel.textContent = isNight ? "白天" : "夜间";
+    themeToggle.setAttribute("aria-pressed", String(isNight));
+    themeToggle.setAttribute("aria-label", `切换到${isNight ? "白天" : "夜间"}版本`);
+    document.querySelector('meta[name="theme-color"]').content = isNight ? "#0b0d10" : "#f2f0e9";
+    if (persist) {
+      try { localStorage.setItem(THEME_KEY, isNight ? "night" : "day"); } catch {}
+    }
+  }
+
+  let initialTheme = "day";
+  try {
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme === "day" || savedTheme === "night") initialTheme = savedTheme;
+  } catch {}
+  setTheme(initialTheme, false);
+  themeToggle.addEventListener("click", () => {
+    setTheme(document.body.dataset.theme === "night" ? "day" : "night");
+  });
+
+  function load() {
+    try {
+      const value = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(value) ? value.filter(item => item && typeof item.text === "string").map(item => ({
+        ...item,
+        answers: Array.isArray(item.answers)
+          ? item.answers.filter(answer => answer && typeof answer.text === "string")
+          : (typeof item.answer === "string" && item.answer.trim() ? [{ text: item.answer, createdAt: item.updatedAt || item.createdAt || Date.now() }] : [])
+      })) : [];
+    } catch { return []; }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(questions)); }
+    catch { alert("浏览器暂时无法保存。可以试试关闭隐私模式或释放一些存储空间。"); }
+  }
+
+  function loadSymposium() {
+    try {
+      const value = JSON.parse(localStorage.getItem(SYMPOSIUM_KEY) || "{}");
+      if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+      return Object.fromEntries(Object.entries(value).map(([id, entry]) => [id, {
+        answers: Array.isArray(entry?.answers)
+          ? entry.answers.filter(answer => answer && typeof answer.text === "string")
+          : (typeof entry?.answer === "string" && entry.answer.trim() ? [{ text: entry.answer, createdAt: entry.updatedAt || Date.now() }] : []),
+        archived: entry?.archived === true,
+        updatedAt: Number(entry?.updatedAt) || 0
+      }]));
+    } catch { return {}; }
+  }
+
+  function loadCustomQuestions() {
+    try {
+      const value = JSON.parse(localStorage.getItem(CUSTOM_QUESTIONS_KEY) || "[]");
+      return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string" && typeof item.question === "string").map(item => ({
+        id: item.id, category: typeof item.category === "string" ? item.category : "philosophy",
+        asker: typeof item.asker === "string" ? item.asker : "我", source: typeof item.source === "string" ? item.source : "自拟题",
+        question: item.question, context: typeof item.context === "string" ? item.context : "", custom: true
+      })) : [];
+    } catch { return []; }
+  }
+
+  function loadCustomCategories() {
+    try {
+      const value = JSON.parse(localStorage.getItem(CUSTOM_CATEGORIES_KEY) || "[]");
+      return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string" && typeof item.label === "string") : [];
+    } catch { return []; }
+  }
+
+  function saveSymposium() {
+    try { localStorage.setItem(SYMPOSIUM_KEY, JSON.stringify(symposiumEntries)); }
+    catch { announce("浏览器暂时无法保存这条回答。"); }
+  }
+
+  function saveCustomQuestions() {
+    try { localStorage.setItem(CUSTOM_QUESTIONS_KEY, JSON.stringify(customQuestions)); }
+    catch { announce("浏览器暂时无法保存自拟问题。"); }
+  }
+
+  function saveCustomCategories() {
+    try { localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(customCategories)); }
+    catch { announce("浏览器暂时无法保存新分类。"); }
+  }
+
+  function loadCompost() {
+    try {
+      const value = JSON.parse(localStorage.getItem(COMPOST_KEY) || "[]");
+      return Array.isArray(value) ? value.filter(item => item && typeof item.text === "string") : [];
+    } catch { return []; }
+  }
+
+  function saveCompost() {
+    try { localStorage.setItem(COMPOST_KEY, JSON.stringify(compost)); }
+    catch { announce("堆肥箱暂时存不下了，先导出一份备份吧。"); }
+  }
+
+  function purgeCompost() {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const before = compost.length;
+    compost = compost.filter(item => (item.deletedAt || 0) > cutoff);
+    if (compost.length !== before) saveCompost();
+  }
+
+  function renderCompost() {
+    const count = document.getElementById("compost-count");
+    const list = document.getElementById("compost-list");
+    if (!count || !list) return;
+    count.textContent = String(compost.length);
+    list.innerHTML = compost.length ? compost.map(item => `
+      <div class="compost-item" data-id="${escapeHTML(item.id)}">
+        <div class="compost-item-top"><p class="compost-question">${escapeHTML(item.text)}</p><span class="compost-meta">删于 ${formatDate(item.deletedAt)}</span></div>
+        <button class="compost-restore" type="button" data-action="restore-compost">捞回花园</button>
+      </div>`).join("") : `<p class="compost-question">堆肥箱是空的。</p>`;
+  }
+
+  function updateBackupNote() {
+    const el = document.getElementById("backup-note");
+    if (!el) return;
+    let last = 0;
+    try { last = Number(localStorage.getItem(BACKUP_AT_KEY)) || 0; } catch {}
+    if (!last) { el.textContent = "花园还没备份过"; el.classList.add("stale"); return; }
+    const days = Math.floor((Date.now() - last) / 86400000);
+    el.textContent = `上次备份：${days === 0 ? "今天" : `${days} 天前`}`;
+    el.classList.toggle("stale", days >= 14);
+  }
+
+  function allPhilosopherQuestions() { return [...philosopherQuestions, ...customQuestions]; }
+
+  function categoryName(id) {
+    return categoryLabels[id] || customCategories.find(category => category.id === id)?.label || "其他";
+  }
+
+  function updateCustomCategoryOptions() {
+    const categories = [...Object.entries(categoryLabels).map(([id, label]) => ({ id, label })), ...customCategories];
+    customCategorySelect.innerHTML = categories.map(category => `<option value="${escapeHTML(category.id)}">${escapeHTML(category.label)}</option>`).join("");
+  }
+
+  function makeId(prefix) { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`; }
+
+  function mergeAnswers(existing = [], incoming = []) {
+    const merged = [...existing];
+    const seen = new Set(merged.map(answer => answer.id ? `id:${answer.id}` : `${answer.createdAt || 0}\u0000${answer.text}`));
+    incoming.forEach(answer => {
+      if (!answer || typeof answer.text !== "string") return;
+      const key = answer.id ? `id:${answer.id}` : `${answer.createdAt || 0}\u0000${answer.text}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      merged.push({ id: typeof answer.id === "string" ? answer.id : makeId("note"), text: answer.text, createdAt: Number(answer.createdAt) || Date.now(), ...(answer.flower ? { flower: true } : {}) });
+    });
+    return merged;
+  }
+
+  function getSymposiumEntry(id) {
+    return symposiumEntries[id] || { answers: [], archived: false, updatedAt: 0 };
+  }
+
+  function noteName(index) {
+    const names = ["首笺", "续笺", "三笺", "四笺", "五笺", "六笺", "七笺", "八笺", "九笺", "十笺"];
+    return names[index] || `第${index + 1}笺`;
+  }
+
+  function announce(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+  }
+
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+  }
+
+  function formatDate(timestamp) {
+    if (!timestamp) return "刚刚";
+    return new Intl.DateTimeFormat("zh-CN", { month: "numeric", day: "numeric" }).format(new Date(timestamp));
+  }
+
+  function renderNotesHTML(item) {
+    const answers = item.answers || [];
+    let regularIndex = 0;
+    const notesHTML = answers.length ? answers.map(answer => {
+      const isFlower = answer.flower === true;
+      const name = isFlower ? "✿ 花签" : noteName(regularIndex++);
+      return `
+            <div class="personal-note${isFlower ? " is-flower" : ""}">
+              <div class="personal-note-head"><span class="personal-note-name">${name}</span><span class="personal-note-date">${formatDate(answer.createdAt)}</span></div>
+              <p class="personal-note-text">${escapeHTML(answer.text)}</p>
+            </div>`;
+    }).join("") : `<div class="personal-note-empty">这颗问题还没有笺记。</div>`;
+    const regularCount = answers.filter(answer => answer.flower !== true).length;
+    const flowerCompose = item.status === "bloomed" ? `
+          <details class="personal-compose flower-compose">
+            <summary>✿ 留一枚花签</summary>
+            <div class="personal-compose-body">
+              <textarea class="personal-answer-input flower-input" maxlength="2000" aria-label="给这个问题留一枚花签" placeholder="想通的那一刻，是什么样子？"></textarea>
+              <button class="personal-answer-save" type="button" data-action="add-flower">收下花签</button>
+            </div>
+          </details>` : "";
+    return `${notesHTML}
+          <details class="personal-compose">
+            <summary>写下${noteName(regularCount)}</summary>
+            <div class="personal-compose-body">
+              <textarea class="personal-answer-input" maxlength="2000" aria-label="给这个问题写一笺" placeholder="过了一会儿，你又想到了什么？"></textarea>
+              <button class="personal-answer-save" type="button" data-action="add-answer">保存${noteName(regularCount)}</button>
+            </div>
+          </details>${flowerCompose}`;
+  }
+
+  function render() {
+    const counts = { all: questions.length, seed: 0, growing: 0, bloomed: 0 };
+    questions.forEach(item => { if (counts[item.status] !== undefined) counts[item.status]++; });
+    document.getElementById("record-total").textContent = `${questions.length} 条记录`;
+    wanderButton.disabled = questions.length === 0;
+    filters.querySelectorAll(".filter").forEach(button => {
+      const key = button.dataset.filter;
+      button.classList.toggle("active", key === activeFilter);
+      button.innerHTML = `${key === "all" ? "全部" : labels[key]}<span class="count">${counts[key]}</span>`;
+    });
+
+    const needle = searchInput.value.trim().toLocaleLowerCase();
+    const visible = questions
+      .filter(item => activeFilter === "all" || item.status === activeFilter)
+      .filter(item => !needle || `${item.text} ${(item.tags || []).join(" ")} ${(item.answers || []).map(answer => answer.text).join(" ")}`.toLocaleLowerCase().includes(needle))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    if (!visible.length) {
+      const isEmpty = questions.length === 0;
+      garden.innerHTML = `<div class="empty"><strong>${isEmpty ? "这里还空着。" : "这一角暂时没有问题。"}</strong>${isEmpty ? "把一个好奇先放进来，不必立刻想出答案。" : "换个筛选条件，或者试试别的关键词。"}</div>`;
+      return;
+    }
+
+    garden.innerHTML = visible.map((item, index) => `
+      <article class="card" data-id="${escapeHTML(item.id)}" data-status="${escapeHTML(item.status || "seed")}">
+        <div class="card-top"><span class="card-index">ENTRY / ${String(index + 1).padStart(2, "0")}</span><span class="card-mark"></span></div>
+        <p class="question">${escapeHTML(item.text)}</p>
+        <div class="personal-notes">
+          ${renderNotesHTML(item)}
+        </div>
+        <div class="card-bottom">
+          <div class="card-info">
+            <span class="meta">种下于 ${formatDate(item.createdAt)}</span>
+            <div class="tags">${(item.tags || []).map(tag => `<span class="tag" data-tag="${escapeHTML(tag)}" role="button" title="看看这个标签下的所有问题">#${escapeHTML(tag)}</span>`).join("")}</div>
+          </div>
+          <div class="card-actions">
+            <select class="status" aria-label="问题状态" data-action="status">
+              ${Object.entries(labels).map(([key, label]) => `<option value="${key}" ${item.status === key ? "selected" : ""}>${label}</option>`).join("")}
+            </select>
+            <button class="action" type="button" data-action="delete" aria-label="删除问题">移除</button>
+          </div>
+        </div>
+      </article>`).join("");
+  }
+
+  function renderSymposium() {
+    const allQuestions = allPhilosopherQuestions();
+    const archivedCount = allQuestions.filter(item => getSymposiumEntry(item.id).archived).length;
+    const activeCount = allQuestions.length - archivedCount;
+    document.getElementById("philosopher-count").textContent = `${allQuestions.length} 问`;
+    document.getElementById("active-prompt-count").textContent = activeCount;
+    document.getElementById("archived-prompt-count").textContent = archivedCount;
+    symposiumFilters.querySelectorAll("[data-sym-filter]").forEach(button => {
+      button.classList.toggle("active", button.dataset.symFilter === activeSymposiumFilter);
+      button.setAttribute("aria-pressed", String(button.dataset.symFilter === activeSymposiumFilter));
+    });
+    const categoryOptions = [
+      { id: "all", label: "全部", count: allQuestions.length },
+      ...Object.entries(categoryLabels).map(([id, label]) => ({ id, label, count: allQuestions.filter(item => item.category === id).length })),
+      ...customCategories.map(category => ({ ...category, count: allQuestions.filter(item => item.category === category.id).length }))
+    ];
+    categoryFilters.innerHTML = categoryOptions.map(category => `
+      <button class="category-filter" type="button" data-category="${escapeHTML(category.id)}" aria-pressed="false">
+        ${escapeHTML(category.label)} <span>${category.count}</span>
+      </button>`).join("");
+    categoryFilters.querySelectorAll("[data-category]").forEach(button => {
+      const category = button.dataset.category;
+      button.classList.toggle("active", category === activeCategory);
+      button.setAttribute("aria-pressed", String(category === activeCategory));
+    });
+
+    const needle = symposiumSearch.value.trim().toLocaleLowerCase();
+    const visible = allQuestions
+      .filter(item => getSymposiumEntry(item.id).archived === (activeSymposiumFilter === "archive"))
+      .filter(item => activeCategory === "all" || item.category === activeCategory)
+      .filter(item => {
+        if (!needle) return true;
+        const answerText = getSymposiumEntry(item.id).answers.map(answer => answer.text).join(" ");
+        return `${item.asker} ${item.source} ${item.question} ${item.context} ${answerText}`.toLocaleLowerCase().includes(needle);
+      });
+    if (!visible.length) {
+      const emptyMessage = needle ? "没有找到符合条件的问题。试试别的关键词或分类。" : activeSymposiumFilter === "archive" ? "这里还没有存档。遇到想留住的问题，可以先写下回答，再收入档案。" : "席间的问题暂时都收进档案了。去“我的存档”里看看，或把它们放回席间。";
+      symposiumList.innerHTML = `<div class="symposium-empty">${emptyMessage}</div>`;
+      return;
+    }
+
+    symposiumList.innerHTML = visible.map(item => {
+      const entry = getSymposiumEntry(item.id);
+      const answers = Array.isArray(entry.answers) ? entry.answers : [];
+      const hasAnswer = answers.length > 0;
+      const notes = answers.map((answer, noteIndex) => `
+        <div class="personal-note">
+          <div class="personal-note-head"><span class="personal-note-name">${noteName(noteIndex)}</span><span class="personal-note-date">${formatDate(answer.createdAt)}</span></div>
+          <p class="personal-note-text">${escapeHTML(answer.text)}</p>
+        </div>`).join("");
+      const archiveAction = activeSymposiumFilter === "archive"
+        ? `<button class="symposium-action" type="button" data-action="restore">放回席间</button>`
+        : `<button class="symposium-action" type="button" data-action="archive">收入存档</button>`;
+      const deleteAction = item.custom ? `<button class="symposium-delete" type="button" data-action="delete-question">删除自拟题</button>` : "";
+      return `
+        <article class="symposium-card" data-question-id="${escapeHTML(item.id)}">
+          <div class="symposium-card-top"><span class="philosopher">${escapeHTML(item.asker)}</span><span class="source-group"><span class="category-badge">${escapeHTML(categoryName(item.category))}</span><span class="source">${escapeHTML(item.source)}</span></span></div>
+          <h3 class="symposium-question">${escapeHTML(item.question)}</h3>
+          <p class="symposium-context">${escapeHTML(item.context)}</p>
+          ${notes ? `<div class="symposium-answers">${notes}</div>` : ""}
+          <label class="answer-label" for="answer-${escapeHTML(item.id)}">YOUR THOUGHTS · ${noteName(answers.length)}</label>
+          <textarea class="answer-input" id="answer-${escapeHTML(item.id)}" maxlength="3000" placeholder="不必写成结论。先记下此刻的想法……"></textarea>
+          <div class="symposium-actions">
+            <span class="answer-state ${hasAnswer ? "saved" : ""}">${hasAnswer ? `${answers.length} 笺已保存 · 最近 ${formatDate(entry.updatedAt || answers[answers.length - 1].createdAt)}` : "尚未留下回答"}</span>
+            <div class="symposium-buttons">
+              <button class="symposium-action primary" type="button" data-action="save-answer">保存为${noteName(answers.length)}</button>
+              ${archiveAction}
+              ${deleteAction}
+            </div>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    const text = questionInput.value.trim();
+    if (!text) { questionInput.focus(); return; }
+    const tags = [...new Set(tagInput.value.split(/[，,、]/).map(tag => tag.trim().replace(/^#/, "")).filter(Boolean))].slice(0, 8);
+    questions.unshift({ id: makeId("question"), text, tags, answers: [], status: "seed", createdAt: Date.now() });
+    save();
+    questionInput.value = "";
+    tagInput.value = "";
+    activeFilter = "all";
+    render();
+    questionInput.focus();
+  });
+
+  promptButton.addEventListener("click", () => {
+    const options = prompts.filter(prompt => prompt !== lastPrompt);
+    lastPrompt = options[Math.floor(Math.random() * options.length)];
+    questionInput.value = lastPrompt;
+    questionInput.focus();
+    questionInput.setSelectionRange(questionInput.value.length, questionInput.value.length);
+    announce("灵感落在纸上了，可以改成你自己的问题。");
+  });
+
+  wanderButton.addEventListener("click", () => {
+    if (!questions.length) return;
+    // 回访偏心：还没想完的问题更容易被翻牌子，想通了的偶尔回来看看就好
+    const weights = { seed: 3, growing: 3, bloomed: 1 };
+    const pool = [];
+    questions.forEach(question => { for (let i = 0; i < (weights[question.status] || 2); i++) pool.push(question); });
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    activeFilter = "all";
+    searchInput.value = "";
+    render();
+    const card = [...garden.querySelectorAll(".card")].find(element => element.dataset.id === item.id);
+    if (!card) return;
+    card.classList.add("is-highlighted");
+    card.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    announce(`重新遇见：「${item.text}」`);
+    setTimeout(() => card.classList.remove("is-highlighted"), 2800);
+  });
+
+  categoryForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const label = categoryNameInput.value.trim();
+    if (!label) return;
+    const exists = [...Object.values(categoryLabels), ...customCategories.map(category => category.label)]
+      .some(name => name.toLocaleLowerCase() === label.toLocaleLowerCase());
+    if (exists) { announce("这个分类已经在了。换个名字试试。"); categoryNameInput.focus(); return; }
+    customCategories.push({ id: makeId("category"), label });
+    saveCustomCategories();
+    categoryForm.reset();
+    updateCustomCategoryOptions();
+    renderSymposium();
+    announce(`新分类「${label}」已加入。`);
+  });
+
+  customQuestionForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const text = document.getElementById("custom-question").value.trim();
+    if (!text) return;
+    const item = {
+      id: makeId("custom-question"),
+      category: customCategorySelect.value || "philosophy",
+      asker: document.getElementById("custom-asker").value.trim() || "你提出的问题",
+      source: document.getElementById("custom-source").value.trim() || "自拟题",
+      question: text,
+      context: document.getElementById("custom-context").value.trim(),
+      custom: true
+    };
+    customQuestions.unshift(item);
+    saveCustomQuestions();
+    customQuestionForm.reset();
+    activeCategory = "all";
+    activeSymposiumFilter = "active";
+    symposiumSearch.value = "";
+    customQuestionForm.closest("details").open = false;
+    renderSymposium();
+    announce("新问题已经加入会饮篇。" );
+  });
+
+  symposiumSearch.addEventListener("input", renderSymposium);
+
+  exportButton.addEventListener("click", () => {
+    const backup = {
+      app: "伊甸园", version: 2, exportedAt: new Date().toISOString(),
+      questions, symposiumEntries, customQuestions, customCategories
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Intl.DateTimeFormat("sv-SE").format(new Date());
+    link.href = url;
+    link.download = `伊甸园-备份-${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    try { localStorage.setItem(BACKUP_AT_KEY, String(Date.now())); } catch {}
+    updateBackupNote();
+    announce("个人问题、会饮篇回答和分类都已备份。");
+  });
+
+  importButton.addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", async () => {
+    const file = importFile.files?.[0];
+    if (!file) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      if (!backup || backup.app !== "伊甸园" || typeof backup !== "object") throw new Error("这不是伊甸园的备份文件。");
+
+      let addedQuestions = 0;
+      let addedPrompts = 0;
+      let addedCategories = 0;
+
+      if (Array.isArray(backup.customCategories)) {
+        for (const category of backup.customCategories) {
+          if (!category || typeof category.id !== "string" || typeof category.label !== "string") continue;
+          const duplicate = customCategories.some(item => item.id === category.id || item.label.toLocaleLowerCase() === category.label.trim().toLocaleLowerCase());
+          if (!duplicate && category.label.trim()) { customCategories.push({ id: category.id, label: category.label.trim() }); addedCategories++; }
+        }
+      }
+
+      if (Array.isArray(backup.customQuestions)) {
+        for (const item of backup.customQuestions) {
+          if (!item || typeof item.id !== "string" || typeof item.question !== "string" || !item.question.trim()) continue;
+          if (customQuestions.some(existing => existing.id === item.id)) continue;
+          const knownCategory = item.category in categoryLabels || customCategories.some(category => category.id === item.category);
+          customQuestions.push({
+            id: item.id, category: knownCategory ? item.category : "philosophy",
+            asker: typeof item.asker === "string" ? item.asker : "你提出的问题",
+            source: typeof item.source === "string" ? item.source : "自拟题",
+            question: item.question, context: typeof item.context === "string" ? item.context : "", custom: true
+          });
+          addedPrompts++;
+        }
+      }
+
+      if (Array.isArray(backup.questions)) {
+        for (const incoming of backup.questions) {
+          if (!incoming || typeof incoming.id !== "string" || typeof incoming.text !== "string" || !incoming.text.trim()) continue;
+          const existing = questions.find(item => item.id === incoming.id);
+          const notes = Array.isArray(incoming.answers) ? incoming.answers : (incoming.answer ? [{ text: incoming.answer, createdAt: incoming.updatedAt || incoming.createdAt }] : []);
+          if (!existing) {
+            questions.push({
+              id: incoming.id, text: incoming.text, tags: Array.isArray(incoming.tags) ? incoming.tags.filter(tag => typeof tag === "string") : [],
+              status: labels[incoming.status] ? incoming.status : "seed", createdAt: Number(incoming.createdAt) || Date.now(),
+              answers: mergeAnswers([], notes)
+            });
+            addedQuestions++;
+          } else {
+            existing.answers = mergeAnswers(existing.answers || [], notes);
+          }
+        }
+      }
+
+      if (backup.symposiumEntries && typeof backup.symposiumEntries === "object" && !Array.isArray(backup.symposiumEntries)) {
+        const knownIds = new Set(allPhilosopherQuestions().map(item => item.id));
+        for (const [id, incoming] of Object.entries(backup.symposiumEntries)) {
+          if (!knownIds.has(id) || !incoming || typeof incoming !== "object") continue;
+          const current = symposiumEntries[id];
+          const oldAnswers = current?.answers || [];
+          const importedAnswers = Array.isArray(incoming.answers) ? incoming.answers : (incoming.answer ? [{ text: incoming.answer, createdAt: incoming.updatedAt }] : []);
+          symposiumEntries[id] = {
+            answers: mergeAnswers(oldAnswers, importedAnswers),
+            archived: current ? current.archived : incoming.archived === true,
+            updatedAt: Math.max(Number(current?.updatedAt) || 0, Number(incoming.updatedAt) || 0)
+          };
+        }
+      }
+
+      save(); saveSymposium(); saveCustomQuestions(); saveCustomCategories();
+      updateCustomCategoryOptions();
+      activeCategory = "all";
+      render(); renderSymposium();
+      announce(`合并完成：新增 ${addedQuestions} 个个人问题、${addedPrompts} 道会饮题、${addedCategories} 个分类。`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "无法读取这个备份文件。");
+    } finally {
+      importFile.value = "";
+    }
+  });
+
+  chapterNav.addEventListener("click", event => {
+    const button = event.target.closest("[data-chapter]");
+    if (!button) return;
+    const isSymposium = button.dataset.chapter === "symposium";
+    edenView.hidden = isSymposium;
+    symposiumView.hidden = !isSymposium;
+    chapterNav.querySelectorAll("[data-chapter]").forEach(tab => {
+      const active = tab === button;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-pressed", String(active));
+    });
+    if (isSymposium) renderSymposium();
+  });
+
+  symposiumFilters.addEventListener("click", event => {
+    const button = event.target.closest("[data-sym-filter]");
+    if (!button) return;
+    activeSymposiumFilter = button.dataset.symFilter;
+    renderSymposium();
+  });
+
+  categoryFilters.addEventListener("click", event => {
+    const button = event.target.closest("[data-category]");
+    if (!button) return;
+    activeCategory = button.dataset.category;
+    renderSymposium();
+  });
+
+  symposiumList.addEventListener("click", event => {
+    const button = event.target.closest("[data-action]");
+    if (!button) return;
+    const card = button.closest("[data-question-id]");
+    const item = allPhilosopherQuestions().find(question => question.id === card?.dataset.questionId);
+    if (!item) return;
+    const entry = { ...getSymposiumEntry(item.id) };
+    entry.answers = [...(entry.answers || [])];
+    const answer = card.querySelector(".answer-input").value;
+    const action = button.dataset.action;
+
+    if (action === "save-answer") {
+      if (!answer.trim()) { card.querySelector(".answer-input").focus(); return; }
+      entry.answers.push({ text: answer.trim(), createdAt: Date.now() });
+      entry.updatedAt = Date.now();
+      symposiumEntries[item.id] = entry;
+      saveSymposium();
+      renderSymposium();
+      symposiumList.querySelector(`[data-question-id="${item.id}"] .answer-input`)?.focus();
+      announce(`${noteName(entry.answers.length - 1)}已经收好。`);
+    } else if (action === "archive" || action === "restore") {
+      if (answer.trim()) {
+        entry.answers.push({ text: answer.trim(), createdAt: Date.now() });
+        entry.updatedAt = Date.now();
+      }
+      entry.archived = action === "archive";
+      symposiumEntries[item.id] = entry;
+      saveSymposium();
+      renderSymposium();
+      announce(action === "archive" ? "已收入“我的存档”。" : "问题已放回席间。" );
+    } else if (action === "delete-question") {
+      const index = customQuestions.findIndex(question => question.id === item.id);
+      if (index === -1) return;
+      if (!confirm(`确定要撤下这道自拟题吗？「${item.question}」\n它留下的回答也会一起删掉，删除后找不回来。`)) return;
+      customQuestions.splice(index, 1);
+      delete symposiumEntries[item.id];
+      saveCustomQuestions();
+      saveSymposium();
+      renderSymposium();
+      announce("自拟题已从席间撤下。");
+    }
+  });
+
+  filters.addEventListener("click", event => {
+    const button = event.target.closest("button[data-filter]");
+    if (!button) return;
+    activeFilter = button.dataset.filter;
+    render();
+  });
+
+  garden.addEventListener("change", event => {
+    if (event.target.dataset.action !== "status") return;
+    const card = event.target.closest("[data-id]");
+    const item = questions.find(question => question.id === card.dataset.id);
+    if (item) {
+      item.status = event.target.value;
+      save();
+      render();
+      if (item.status === "bloomed") announce("想通了的话，留一枚花签给它吧。");
+    }
+  });
+
+  garden.addEventListener("click", event => {
+    const card = event.target.closest("[data-id]");
+    if (!card) return;
+    const tagChip = event.target.closest("[data-tag]");
+    if (tagChip) {
+      searchInput.value = tagChip.dataset.tag;
+      render();
+      announce(`正在看「#${tagChip.dataset.tag}」底下的问题。清空搜索框就能回到全部。`);
+      return;
+    }
+    if (event.target.dataset.action === "add-answer") {
+      const item = questions.find(question => question.id === card.dataset.id);
+      const input = card.querySelector(".personal-answer-input");
+      const text = input.value.trim();
+      if (!item || !text) { input.focus(); return; }
+      if (!Array.isArray(item.answers)) item.answers = [];
+      const note = { id: makeId("note"), text, createdAt: Date.now() };
+      item.answers.push(note);
+      save();
+      render();
+      announce(`${noteName(item.answers.length - 1)}已经收好。`);
+      return;
+    }
+    if (event.target.dataset.action === "add-flower") {
+      const item = questions.find(question => question.id === card.dataset.id);
+      const input = card.querySelector(".flower-input");
+      const text = input ? input.value.trim() : "";
+      if (!item || !text) { if (input) input.focus(); return; }
+      if (!Array.isArray(item.answers)) item.answers = [];
+      item.answers.push({ id: makeId("note"), text, createdAt: Date.now(), flower: true });
+      save();
+      render();
+      announce("花签收好了。想通的日子会记得。");
+      return;
+    }
+    if (event.target.dataset.action !== "delete") return;
+    const item = questions.find(question => question.id === card.dataset.id);
+    if (!item) return;
+    if (!confirm(`确定要移除这颗问题吗？「${item.text}」\n它会去堆肥箱躺三十天，期间随时可以捞回来。`)) return;
+    questions = questions.filter(question => question.id !== card.dataset.id);
+    compost.unshift({ ...item, deletedAt: Date.now() });
+    save();
+    saveCompost();
+    renderCompost();
+    render();
+    announce("已经放进堆肥箱。三十天内随时可以捞回来。");
+  });
+
+  document.getElementById("compost-list").addEventListener("click", event => {
+    const button = event.target.closest("[data-action='restore-compost']");
+    if (!button) return;
+    const box = button.closest("[data-id]");
+    const item = compost.find(question => question.id === box?.dataset.id);
+    if (!item) return;
+    compost = compost.filter(question => question.id !== item.id);
+    delete item.deletedAt;
+    questions.unshift(item);
+    save();
+    saveCompost();
+    renderCompost();
+    render();
+    announce(`「${item.text}」回到花园了。`);
+  });
+
+  searchInput.addEventListener("input", render);
+  render();
+  renderCompost();
+  renderSymposium();
+  updateBackupNote();
+})();
+</script>
+</body>
+</html>
